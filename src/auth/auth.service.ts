@@ -1,7 +1,12 @@
 import { AuthCredentialsDDto } from './dto/auth-credentials.dto';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -19,7 +24,17 @@ export class AuthService {
       password,
     });
 
-    await this.usersRepository.save(user);
-    // throw new HttpException('Usuario created successfuly', HttpStatus.CREATED);
+    try {
+      await this.usersRepository.save(user);
+    } catch (error) {
+      console.log(error.code);
+      if (error.code === '23505') {
+        // duplicate username
+        throw new HttpException('username already exists', HttpStatus.CONFLICT);
+      } else {
+        throw new InternalServerErrorException();
+      }
+    }
+    throw new HttpException('User created successfuly', HttpStatus.CREATED);
   }
 }
