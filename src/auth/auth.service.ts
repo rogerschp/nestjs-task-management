@@ -1,4 +1,4 @@
-import { AuthCredentialsDDto } from './dto/auth-credentials.dto';
+import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import {
@@ -17,7 +17,7 @@ export class AuthService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async signUp(authCredentialsDto: AuthCredentialsDDto): Promise<void> {
+  async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     const { username, password } = authCredentialsDto;
 
     const salt = await bcrypt.genSalt();
@@ -40,5 +40,20 @@ export class AuthService {
       }
     }
     throw new HttpException('User created successfuly', HttpStatus.CREATED);
+  }
+
+  async signIn(authCredentialsDto: AuthCredentialsDto): Promise<string> {
+    const { username, password } = authCredentialsDto;
+
+    const user = await this.usersRepository.findOne({ where: { username } });
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+      return 'success';
+    } else {
+      throw new HttpException(
+        'Please check yout login credentials',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
   }
 }
