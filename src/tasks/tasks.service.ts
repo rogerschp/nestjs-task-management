@@ -4,7 +4,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { TaskStatus } from './task-status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './task.entity';
-import { Repository } from 'typeorm';
+import { ILike, Like, Repository } from 'typeorm';
 
 @Injectable()
 export class TasksService {
@@ -19,8 +19,13 @@ export class TasksService {
 
   async getTasks(filterDto: GetTasksFilterDto): Promise<Task[]> {
     const { status, search } = filterDto;
+
+    const test = await this.tasksRepository.findBy({
+      title: Like(`%${search}`),
+    });
+
+    console.log(test);
     const query = await this.tasksRepository.createQueryBuilder('task');
-    const tasks = await query.getMany();
 
     if (status) {
       query.andWhere('task.status = :status', { status });
@@ -34,6 +39,9 @@ export class TasksService {
         },
       );
     }
+    const tasks = await query.getMany();
+
+    //console.log(tasks, 'teste');
 
     return tasks;
   }
@@ -56,7 +64,7 @@ export class TasksService {
   // }
 
   async getTaskById(id: string): Promise<Task> {
-    const found = await this.tasksRepository.findOne({ where: { id: id } });
+    const found = await this.tasksRepository.findOne({ where: { id } });
 
     if (!found) {
       throw new NotFoundException(`Task with ID "${id}" not found`);
