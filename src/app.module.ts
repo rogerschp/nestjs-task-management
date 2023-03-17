@@ -9,9 +9,9 @@ import { AuthModule } from './auth/auth.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
-      port: 5432,
+      port: 49153,
       username: 'postgres',
-      password: 'Cathoud',
+      password: 'postgrespw',
       database: 'task-management',
       autoLoadEntities: true,
       synchronize: true,
